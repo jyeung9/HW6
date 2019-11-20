@@ -1,0 +1,187 @@
+
+/*
+	WORD INTERFACE
+	/*  this test case is similar to how we will test the other functions within this interface 
+		this interface just returns the values of the fields within instructions, registers, and
+		other values
+
+	*/
+
+
+	bool test_return_instruction(uint32_t word, uint32_t instruct){
+		uint32_t new_word;
+		new_word = Bitpack_getu(new_word, 4, 28);
+		if(new_word == instruct){
+			return true;
+		}
+		return false;
+	}
+
+
+	INSTRUCTION INTERFACE
+	/* this interface will contain 14 tests, 1 for each of the 14 RISC style instructions */
+
+	In order to test, we will use the lab files to create the ".um" test files
+	We will also "umdump" these ".um" files to ensure the correct operation
+
+
+	SEGMENT INTERFACE
+	/* this interface deals with handling a single segment, adding words 
+	We need to make sure that we are accessing the correct word */
+
+	Here, we have typedefed Seq_T * as Seg_T's.
+
+	void test_seq_interface(){
+
+		Seg_T segment = Seg_new(5);
+		
+
+		/* we are commenting this out when not testing this, b/c it would be a CRE */
+		/* uint32_t word = Seg_get(segment, 2);				*/
+
+		Seg_append(segment, 4);
+		Seg_append(segment, 3);
+		Seg_append(segment, 5);
+		Seg_append(segment, 1);
+
+		uint32_t word = Seg_get(segment, 0); // now we can check the value of word
+
+		uint32_t word2 = Seg_get(segment, 2); // this should be 5 ASCII
+		Seg_put(segment, 2, 2); // this puts 2 ASCII at position 2
+
+		word2 = Seg_get(segment, 2);
+
+		Seg_free(&segment);
+	}
+
+	MEMORY INTERFACE
+
+	Test 1: unmapping more segments than we have
+	Input/Execute: Map 1 segment, unmap 2
+	Output/Result: machine should fail
+	Test 2: mapping, unmapping, and remapping same indices
+	Make sure that we remove successfully 
+	Map_seg
+
+	/* this tests functionality of map_seg
+
+	map_seg(size, mapped, unmapped){
+		/* check whether unmapped is non-null (seq_length)
+			- if null, OR length = 0, then we don't have
+			  previously used segments --> must append
+			  completely new segment to end of (of size "size") 
+			  sequence
+
+
+			- if non-null or length of unmapped != 0 there 
+			  are existing segments we can use to append to 
+			  the mapped sequence
+
+		*/
+		Seg_T segment = Seg_new(size);
+		if(Seq_length(unmapped) == 0){
+			Seq_addhi(mapped, segment);
+
+		}
+		else if(Seq_length > 0){
+			int index = Seq_remlo(unmapped);
+			Seq_put(mapped, index, segment);
+		}
+
+	}
+
+	/ * use "map" and "unmap" up to function "test_get_word" */
+
+	Seq_T map = Seq_new(3);
+	Seq_T unmap = Seq_new(0);
+	void test_map_seg(size, mapped, unmapped){
+
+		map_seg(size, map, unmap);
+		fprintf(Seq_length(map)); // this should print 4;
+	}
+
+	void test_unmap_seg(size, mapped, unmapped){
+		// the index is the value stored in the register
+		unmap_seg(2, map, unmap);
+		fprintf(Seq_length(unmap)); // should print 1;
+
+	}
+
+	void test_get_word(int seg, int offset){
+
+		uint32_t word_val = get_word(map, seg, offset);
+		fprintf(stderr, "%u\n", word_val);
+	}
+
+	/***** WE FREE SEQ_T MAP & SEQ_T UNMAP AT THIS POINT *****/
+	void test_free(Seq_T * mapped, Seq_T *unmapped){
+
+		for(mapped){
+			free pointers to sequences in mapped
+		}
+		Seq_free(&mapped);
+		Seq_free(&unmapped);
+
+	}
+
+	void test_load_seg(Seq_T mapped, int seg, int word_index, int reg_index){
+
+		/* we will check the registers array to make sure that 
+		 * the registers have the correct value
+		*/
+
+		load_seg(mapped, seg, word_index, reg_index);
+
+	}
+
+	void test_execute_instructions()
+	{
+		/*
+		 * Grabs instruction at given segment and word, and executes 
+		 * as instructions specify
+		 * After executing instruction, update program counter
+		 * 
+		 * we will check to see whether execute_instruction() recognizes 
+		 * the end of a segment, and stops accordingly
+		*/
+
+	}
+
+	void test_store_seg(Seq_T mapped, int seg_index, int word_index, int reg_index){
+
+		/* takes word from reg_array at reg_index and stores into
+		   memory at specified seg_index and word_index
+
+		*/
+		store_seg(mapped, seg_index, word_index, reg_index);
+
+	}
+
+	void test_init_um(FILE *fp){
+		- call on init_um(fp)
+			- check program counter: should be pointing at segment 0, word 0
+			- check if FILE * null
+			- malloc space for/initialize register array/sequences
+	}
+
+	void 
+
+	/* this function tests to see how various memory functions interact with each other */
+	void test_memory(){
+
+		uint32_t arr[8] = {0};
+
+		// checking Hanson functionalities
+		Seq_T mapped = Seq_new(1);
+		Seq_T unmapped = Seq_new(1);
+
+		map_seg(size, mapped, unmapped)
+
+		for(int i = 0; i < Seq_length(mapped); i++){
+			if(Seq_get(mapped, i) != 0){
+				/*** sequence not mapped correctly ***/
+			}
+		}
+	}
+
+*/

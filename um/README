@@ -1,0 +1,320 @@
+COMP40
+Fall 2019
+HW 6: The UM
+Julie Yeung (jyeung03) and Zetty Cho (echo02)
+README
+
+/*****************************************************************************/
+                                ACKNOWLEDGEMENTS
+
+1. Danielle
+2. Grant
+3. Leila
+4. Lots of other TAs
+    - Lots
+    - And lots
+5. Friends Andrew DelMastro, Ezra Szanton, Liana Wang, Andrew Crofts, Sam,
+   Alyssa, and Cindy for much emotional support
+
+Also the COMP 40 um and profiling labs and COMP40 lectures on the UM.
+Anyone who had to witness us rolling down the hall. 
+
+/*****************************************************************************/
+                                IMPLEMENTATION
+
+We believe we have correctly implemented the following files:
+    - word.h/word.c : our word interface
+    - segment.h/segment.c : our segment interface 
+    - instruct.h/instruct.c : our instruct interface
+    - memory.h/memory.c : our memory interface 
+    - um.c : our virtual machine, which runs our UM executable
+
+In addition we provide the following:
+    - Modified Makefile : 
+        - make with "make um" and run with "./um [filename].um"
+            - can run with input files with the addition of "< [filenam].0"
+    - README : this file
+    - .um/.0/.1 files for unit testing our instructions
+
+/*****************************************************************************/
+                            SIGNIFICANT DEPARTURES
+
+There were none; we just realized that we needed a Seq_T mapped, Seq_T 
+unmapped for some of our function contracts. In addition, we decided to not 
+include the word interface in our segment and instruct interfaces, as they 
+had no need for the word interface functionality. 
+Other than that, we followed our general planning for this program. 
+
+/*****************************************************************************/
+                            ARCHITECTURE OF SYSTEM
+
+Our um.c utilizes three interfaces: memory, segment, and word.
+
+The word interface is a typedef of uint32_t types. It has the ability to grab
+the instructions from the four most significant bits in a word and can also 
+return the necessary register indices that are specified in the word, depending
+on whether the operation is load value or one of the other operations. This 
+takes care of the majority of the bitpacking operations in the program ––
+the only other place where there should be bitpacking is when we are reading
+in the UM files Big-Endian (this would be in the memory interface). 
+
+The segment interface is a modification of Hanson Seq_Ts. It is used to take
+care of casting between uint32_t types and void * when we're grabbing words
+from segments. We do not include the word interface here. 
+The client would be able to initialize and free segments, inserts words, append
+words, get words and get the length of the segments. 
+
+The instruct interface contains all the functionality of the op-code 
+instructions. The client can access all of the instructions in the interface.
+
+The memory interface is what executes the UM program. It includes both the 
+segment and the word interfaces. It defines a Memory struct that contains
+sequences for mapped and unmapped segments. The client would not be able to 
+directly access this struct, however. The client would only be able to ask for
+a Memory struct to be initialized and for the programs contained in the struct
+to be executed. The interface will take care of freeing all the allocated 
+memory and actually executing the specified instructions.
+Also contains:
+    - switch codes for all of the op-codes -> will call relevant instructions
+    - loop for iterating through all the instructions to trigger switches
+
+um.c is what takes in the file input to initialize the memory. All it will do
+is check for correct file input and then it will leave the rest of the 
+implementation to the memory interface. 
+
+/*****************************************************************************/
+                       TIME FOR 50 MILLION INSTRUCTIONS 
+
+By this, we would be able to run 50 million instructions in approximately 
+4.017 seconds, using the following conversion -- 50(6.427/80)
+
+/*****************************************************************************/
+                                UM UNIT TESTS
+
+**NOTE** In addition to these .um test files, we also tested our interfaces
+      incrementally as we built them. For each of our four interfaces, we
+      crafted a ".c" test file to test the functioning of each of the 
+      functions
+
+In the case of an output file, we  ouput some character with the newline 
+character appended to the end. 
+
+1. halt.um
+
+    Input file: none
+    Output file: none
+
+    This test calls on the halt instruction, and requires no input and 
+    output files.
+
+2. halt-verbose.um
+
+    Input file: none
+    Output file: halt-verbose.1
+
+    This test loads the characters 'B', 'a', 'd', and '!', and prints 
+    out each one of these characters as "Bad!" We also generated an output
+    file halt-verbose.1, which contains the expected string "Bad!" with 
+    which we "diff"ed.
+
+3. add.um
+
+    Input file: none
+    Output file: add.1
+
+    This test loads the ascii values of 50 and 51 into registers r2
+    and r3, then calls the add function to store the sum of those two values
+    into r1. This result is output to a file, and "diff"ed against the add.1 
+    output file we generated (we expect character 'e' because 50+51 is 101,
+    and ascii value 101 is 'e').
+
+4. load-val.um
+
+    Input file: none
+    Output file: load-val.1
+
+    This test loads in ascii value 100 into register r1, and then outputs
+    that value into an output file. That output file is "diff"ed against 
+    expected output file load-val.1 (we expect character 'd' because ascii 
+    value 100 is character 'd')
+
+5. add2.um
+
+    Input file: add2.0
+    Output file: add2.1
+
+    This test performs add via standard input. It requests for 2 input values 
+    to be stored to registers r2 and r3, sums the values, stores that into 
+    register r1, and outputs that result into a file. In order to feed in
+    input from standard in, we generated an input file add2.0 which contains
+    '23'. The ascii value of '2' is 50, and the ascii value of '3' is 51. The
+    sum returns ascii 101, which is the value for character 'e'. As such,
+    our output file expects character 'e'.
+
+6. print-digit.um
+
+    Input file: none
+    Output file: print-digit.1
+
+    This test loads the ascii value 48 into register r1, and ascii
+    value 6 into register r2. The function "add" is called upon, and we
+    expect the output to be the character '6'. This is because whenever
+    we add the ascii value 48 to another ascii value, we expect as output
+    that ascii value. We diff'ed and found no issues.  
+
+7. conditional-move.um
+
+    Input file: none
+    Output file: conditional-move.1
+
+    This test loads ascii 3 into r1, ascii 5 into r2, and ascii 0 into r3.
+    Then, the c_move(r1, r2, r3) function is called, and we expect the value in 
+    r2 to be stored into r1 because r3 has value 0. The output file contains
+    "3\n5\n"
+
+8. nand.um
+
+    Input file: none
+    Output file: nand.1
+
+    This test loads the ascii value 'a' into registers r2 and r3, and 
+    calls on nand twice: nand(r1, r2, r3), and nand(r1, r1, r1). In performing
+    this nand operation twice, we expect the original ascii value 'a' to be
+    printed to with output(r1). We diffed this result against our expected
+    output file and found no issues.
+
+9. mult.um
+
+    Input file: none
+    Output file: mult.1
+    
+    This test loads 2 values, 10 and 10 into 2 registers r1 and r3. 
+    The mult(r1, r2, r3) function is called, and the product of r2 and r3
+    is stored in r1. This r1 value is output to a file, and we diff this file
+    with an output mult.1 file to confirm (we expect character 'd' because
+    ascii value 100 is character 'd').
+    
+10. div.um
+
+    Input file: none
+    Output file: div.1
+
+    This test loads in ascii value 126 into register r2, and 2 into r3.
+    The div(r1, r2, r3) function is called, and the quotient of r2 with r3 is 
+    stored into register r1. This value in r1 is output to a file, and "diff"ed
+    against our expected output file by zero, however, the result should be a 
+    "floating point exception." 
+   
+11. input.um
+    
+    Input file: input.0
+    Output file: input.1
+
+    This test takes in input from standard in, stores that into register r3,
+    then outputs that value into an output file. We then diff that against
+    our expected value file, and there were no problems.
+
+12. output.um
+
+    Input file: none
+    Output file: output.1
+    
+    This test loads the ascii value 3 into register r1, and outputs that
+    into an output file. We expect the same value to be output, so 
+    we diffed our program output with output.1 and found no problems. 
+
+13. seg-store-load.um
+
+    Input file: none
+    Output file: seg-store-load.1
+
+    This test loads the ascii value 'a' into register r1. Then, 
+    segmented_store(0, 0, r1), which stores the value 'a' into memory at 
+    m[0][0]. We then call on segmented_load(r2, 0, 0) to store the value at 
+    m[0][0] into register r2. We expect ascii value 'a' to be printed out. 
+    To confirm, we compared out program output with the expected output
+    file seg-store-load.1, and found no problems.
+
+14. map-seg.um
+
+    Input file: none
+    Output file: map-seg.1
+
+    This test loads ascii value 5 into register r3, and maps at index 
+    r2 a segment of length 5. We then added 48 to r2 to make it a printable
+    ascii. r2 has the value of 1, so Ascii value 1+ 48 = 49, which
+    is the value for the character '1'. We diffed our program output with
+    expected output file map-seg.1 and found no problems.
+
+15. unmap-seg.um
+
+    Input file: none
+    Output file: unmap-seg.1
+
+    This test loads the value of 5 into register r3, maps a segment at 
+    index r2 that is of length 5, unmaps that segment, and maps back that 
+    segment again. In order to check the index that is mapped back, we 
+    add the ascii value 48 to register r2, and output that value. We 
+    expect register r2, or the value of 1 to be printed out. We diffed
+    our progras program to fail, so we did not
+    create an output file to diff against. 
+    
+16. load-prog.um
+
+    Input file: none
+    Output file: load-prog.1
+
+    This test works within one segment. Since load_prog specifies a new index 
+    for the prog_counter, the .um file is set so that with load_program, we can
+    skip a few instructions –– specifically, we skip and output instruction and
+    a load value instruction. After skipping those instructions, we expect '4'
+    to be printed out. 
+
+17. more-load-seg.um
+
+    Input file: none
+    Output file: more-load-seg.1
+
+    This test will create a second segment that contains a program that will be
+    loaded in. The segment at [0] initially specifies that a new segment must be
+    mapped, and the index of that newly mapped segment is outputted to make sure
+    it is the correct value (1). Using seg-load and seg-store, instructions from
+    the first segment are used to form instruction of the second segment, which
+    will load '0' into a register and print out that value with a new line 
+    character before halting. From this, the final output of this test is
+    expected to be '1\n0\n'
+
+18. many-instruct.um
+
+    Input file: none
+    Output file: many-instruct.1
+
+    This test basically adds 0 to 1 (the ASCII value 49) 500,000 times. 
+    It executes in under a second. The output is "1\n"
+
+19. map-unmap-loop.um
+
+    Input file: none
+    Output file: map-unmap-loop.1
+
+    This test loops 500000 times. In these times, we load ascii value 5 into
+    register r1, and ascii value 3 into register r3. Then, we map 2 segments,
+    and unmap them. After exiting the loop, we make sure that we print out
+    printable ascii values by adding 48 to registers r1 and r3. By this method,
+    we expected '1' and '2' to be printed out as these are the values of the 
+    indices of the registers. 
+
+/*****************************************************************************/
+                          HOURS ANALYZING ASSIGNMENTS
+
+10 hours
+
+/*****************************************************************************/
+                          HOURS PREPARING YOUR DESIGN
+
+5 hours 
+
+/*****************************************************************************/
+                    HOURS SOLVING PROBLEMS AFTER ANALYSIS
+ 
+15 hours
